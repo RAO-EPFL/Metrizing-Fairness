@@ -28,9 +28,9 @@ To install the most updated DCCP, please see
 https://github.com/cvxgrp/dccp/
 ```
 ## Training
-To train the models in the paper, run this command:
+To train and test our method, run this command:
 ```
-python ./src/run.py
+python ./classification\ and\ regression/src/run_benchmark.py
 ```
 
 
