@@ -32,28 +32,6 @@ def energy_distance(y1, y2):
             -torch.abs(y2.unsqueeze(0)-y2.unsqueeze(1)).sum()/(n2*(n2-1)))
 
 
-def wasserstein_distance(y1, y2):
-    '''
-    Compute wasserstein distance between empirical distance y1 and y2, each 1 dimensional
-
-    Args:
-        y1 (torch.Tensor):  Samples from Distribution 1
-        y2 (torch.Tensor):  Samples from Distribution 2
-
-    Returns:
-        dist (torch.Tensor): The computed Wasserstein distance
-
-    '''
-    C = torch.sqrt(torch.norm(y1.unsqueeze(0)-y2.unsqueeze(1), dim=2)**2)
-    C_np = C.data.numpy()
-    # solve OT problem
-    ones_1 = np.ones((C_np.shape[0], 1)) / C_np.shape[0]
-    ones_2 = np.ones((C_np.shape[1], 1)) / C_np.shape[1]
-    
-    wd = torch.multiply(torch.Tensor(ot.emd(ones_1.flatten(), ones_2.flatten(), C_np)), C).sum()
-    return wd
-
-
 # +------------------------------------------+
 # | Metric 2: Sinkhorn Divergence            |
 # +------------------------------------------+
@@ -207,6 +185,31 @@ def statistical_parity_classification(y1_hat, y2_hat, y1, y2):
         epsilon (torch.Tensor): max statistical imparity
     '''
     return ((y1_hat).sum() / y1_hat.shape[0] - (y2_hat).sum() / y2_hat.shape[0]).abs()
+    
+
+# +-----------------------------------------+
+# | Evaluation Metric 2: Equal Opportunity  |
+# +-----------------------------------------+
+
+# CHANGE: CHANGE TO EQUAL OPPORTUNITY FORMULATION
+def equal_opportunity_classification(y1_hat, y2_hat, y1, y2):
+    '''
+    Compute equal opportunity metric
+
+    Args:
+        y1_hat (torch.Tensor):  Predictions for protected class 1
+        y2_hat (torch.Tensor):  Predictions for protected class 2
+        y1 (torch.Tensor):      True Value for protected class 1
+        y2 (torch.Tensor):      True Value for protected class 2
+
+    Returns:
+        epsilon (torch.Tensor): max statistical imparity
+    '''
+    y1_hat_sharp = (y1_hat>=0.5).float()[y1==1]
+    y2_hat_sharp = (y2_hat>=0.5).float()[y2==1]
+    return (y1_hat_sharp.mean()-y2_hat_sharp.mean()).abs()
+
+# END CHANGE
 
 
 # +------------------------------------------+
